@@ -43,18 +43,25 @@ const app = express();
 
 app.use(express.static(path.join(process.cwd(), "client")));
 
+
+app.get("/api/colors", (_, res) => {
+  res.json(colors);
+});
+
 app.get("/*", (_, res) => {
   res.send("Place(holder)");
 });
 
-const server = app.listen(port);
+const server = app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
 
 const wss = new WebSocket.Server({
   noServer: true,
 });
 
 server.on("upgrade", (req, socket, head) => {
-  const url = new URL(req.url, req.headers.origin);
+  const url = new URL(req.url, `http://${req.headers.host}`);
   console.log(url);
   wss.handleUpgrade(req, socket, head, (ws) => {
     wss.emit("connection", ws, req);

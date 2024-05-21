@@ -4,49 +4,50 @@ const setAttributes = (element, object) => {
   }
 };
 
-const drawPalette = async () => {
-  const colors = hardcodedColors;
-  pickedColor = colors[0];
-  const palette = document.querySelector("#palette");
-  const fragment = document.createDocumentFragment();
-  for (const color of colors) {
-    const label = document.createElement("label");
-    label.setAttribute("class", "palette__color");
-    const input = document.createElement("input");
-    setAttributes(input, {
-      class: "palette__checkbox",
-      type: "radio",
-      name: "color",
-      value: color
-    });
-    if (color === pickedColor) {
-      input.setAttribute("checked", "");
-    }
-    input.addEventListener("input", e => {
-      pickedColor = e.target.value;
-    });
-    const span = document.createElement("span");
-    setAttributes(span, {
-      class: "palette__name",
-      style: `background-color: ${color}`
-    });
-    label.appendChild(input);
-    label.appendChild(span);
-    fragment.appendChild(label);
+const fetchColorsFromServer = async () => {
+  const response = await fetch('/api/colors'); // Предположим, что сервер предоставляет цвета по этому URL
+  if (!response.ok) {
+    throw new Error('Failed to fetch colors');
   }
-  palette.appendChild(fragment);
+  return response.json();
 };
 
-const hardcodedColors = [
-  "#140c1c",
-  "#30346d",
-  "#854c30",
-  "#d04648",
-  "#597dce",
-  "#8595a1",
-  "#d2aa99",
-  "#dad45e",
-];
+const drawPalette = async () => {
+  try {
+    const colors = await fetchColorsFromServer();
+    pickedColor = colors[0];
+    const palette = document.querySelector("#palette");
+    const fragment = document.createDocumentFragment();
+    for (const color of colors) {
+      const label = document.createElement("label");
+      label.setAttribute("class", "palette__color");
+      const input = document.createElement("input");
+      setAttributes(input, {
+        class: "palette__checkbox",
+        type: "radio",
+        name: "color",
+        value: color
+      });
+      if (color === pickedColor) {
+        input.setAttribute("checked", "");
+      }
+      input.addEventListener("input", e => {
+        pickedColor = e.target.value;
+      });
+      const span = document.createElement("span");
+      setAttributes(span, {
+        class: "palette__name",
+        style: `background-color: ${color}`
+      });
+      label.appendChild(input);
+      label.appendChild(span);
+      fragment.appendChild(label);
+    }
+    palette.appendChild(fragment);
+  } catch (error) {
+    console.error('Error drawing palette:', error);
+  }
+};
 
 let pickedColor = null;
 
